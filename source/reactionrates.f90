@@ -49,6 +49,9 @@ subroutine reactionrates
   integer            :: ia               ! mass number from abundance table
   integer            :: is               ! isotope counter: -1=total, 0=ground state 1=isomer
   integer            :: iz               ! charge number of residual nucleus
+  real(sgl), parameter :: split_tolerance = 0.1 ! allowed relative difference between total and sum of states
+  real(sgl)          :: rate_states      ! sum of the reaction rates of the states
+  real(sgl)          :: sacs_states      ! sum of the spectrum averaged cross sections of the states
   integer            :: N                ! neutron number of residual nucleus
   integer            :: nE               ! number of energies
   integer            :: nen              ! energy counter
@@ -267,6 +270,32 @@ subroutine reactionrates
           if (Leff > 0.) sacs(iz, ia, is) = ratesum / Leff
         endif
       enddo
+    enddo
+  enddo
+!
+! For a residual with isomeric states, the states are what the decay equations use, so the total is defined as
+! their sum. A total file that disagrees with the sum of the state files is reported, as that points to
+! inconsistent cross section data.
+! The target nuclide is excluded: its total is the (depleting) target itself.
+!
+  do iz = Zcomp + 1, 0, -1
+    do ia = Acomp, 0, -1
+      if (iz < Zcomp - Zdepth .or. ia < Acomp - Adepth) cycle
+      if (iz == 0 .and. ia == 0) cycle
+      if (iz == Ztarget .and. ia == Atarget) cycle
+      if (Nisomer(iz, ia) < 0) cycle
+      rate_states = 0.
+      sacs_states = 0.
+      do is = 0, Nisomer(iz, ia)
+        rate_states = rate_states + reaction_rate(iz, ia, is)
+        sacs_states = sacs_states + sacs(iz, ia, is)
+      enddo
+      if (abs(rate_states - reaction_rate(iz, ia, -1)) > split_tolerance * max(rate_states, reaction_rate(iz, ia, -1))) &
+ &      write(*, '(" ISOTOPIA-warning: reaction rate of ", a2, i4, " from the total file (", es12.5, &
+ &        ") differs from the sum of its states (", es12.5, "); the sum is used")') &
+ &        nuc(iz), ia, reaction_rate(iz, ia, -1), rate_states
+      reaction_rate(iz, ia, -1) = rate_states
+      sacs(iz, ia, -1) = sacs_states
     enddo
   enddo
 !

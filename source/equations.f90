@@ -61,6 +61,7 @@ subroutine equations
   integer   :: is_p    ! isotope counter: -1=total, 0=ground state 1=isomer
   integer   :: is_p1   ! first isomeric state of parent
   integer   :: is_p2   ! last isomeric state of parent
+  integer   :: is_s    ! counter over the isomeric states of a nuclide
   integer   :: it      ! counter for tritons
   integer   :: iz      ! charge number of residual nucleus
   integer   :: k       ! counter for decay mode
@@ -263,6 +264,24 @@ subroutine equations
     enddo
   enddo
 !
+! ******************** Total of a nuclide with isomeric states ***********
+!
+! The states are solved with their own production and decay, so the total of a nuclide with isomeric states is
+! the sum of its states, not a separate solution. The target nuclide keeps its own (depleting) total.
+!
+  do iz = Zcomp + 1, Zcomp + 1 - Zdepth, -1
+    do ia = Acomp, Acomp - Adepth, -1
+      if (Nisomer(iz, ia) < 0) cycle
+      if (iz == Ztarget .and. ia == Atarget) cycle
+      do it = 0, numtime
+        Niso(iz, ia, -1, it) = 0.
+        do is_s = 0, Nisomer(iz, ia)
+          Niso(iz, ia, -1, it) = Niso(iz, ia, -1, it) + Niso(iz, ia, is_s, it)
+        enddo
+      enddo
+    enddo
+  enddo
+!
 ! ******************** Pass 3: totals and time of maximum yield ********
 !
   do iz = Zcomp + 1, Zcomp + 1 - Zdepth, -1
@@ -275,6 +294,10 @@ subroutine equations
             Yexist(iz, ia, is) = .true.
             Ynatexist(iz, ia, is) = .true.
           endif
+!
+! A nuclide with isomeric states is counted once, through its states (its total is their sum).
+!
+          if (is == -1 .and. Nisomer(iz, ia) >= 0 .and. .not. (iz == Ztarget .and. ia == Atarget)) cycle
           Nisotot(iz, it) = Nisotot(iz, it) + Niso(iz, ia, is, it)
         enddo
         if ( .not. Yexist(iz, ia, is)) cycle
