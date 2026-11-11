@@ -40,7 +40,6 @@ subroutine activities
   integer   :: ia      ! mass number from abundance table
   integer   :: is      ! isotope counter: -1=total, 0=ground state 1=isomer
   integer   :: it      ! counter for tritons
-  integer   :: itm     ! maxmum time
   integer   :: iz      ! charge number of residual nucleus
   real(sgl) :: acmax   ! maximum activity
   real(sgl) :: activity_factor
@@ -77,22 +76,29 @@ subroutine activities
       enddo
     enddo
   enddo
+!
+! The total of a nuclide with isomeric states is the sum of its states (see equations.f90): each state decays with
+! its own decay constant, so the activity and yield of the total are the sums over the states.
+!
+  do iz = Zcomp + 1, Zcomp + 1 - Zdepth, -1
+    do ia = Acomp, Acomp - Adepth, -1
+      if (Nisomer(iz, ia) < 0) cycle
+      if (iz == Ztarget .and. ia == Atarget) cycle
+      do it = 1, numtime
+        activity(iz, ia, -1, it) = 0.
+        yield(iz, ia, -1, it) = 0.
+        do is = 0, Nisomer(iz, ia)
+          activity(iz, ia, -1, it) = activity(iz, ia, -1, it) + activity(iz, ia, is, it)
+          yield(iz, ia, -1, it) = yield(iz, ia, -1, it) + yield(iz, ia, is, it)
+        enddo
+      enddo
+    enddo
+  enddo
   do iz = Zcomp + 1, Zcomp + 1 - Zdepth, -1
     do ia = Acomp, Acomp - Adepth, -1
       do is = -1, Nisomer(iz, ia)
         acmax = 0.
         do it = 1, numtime
-!
-! MV correct the case is=-1  when an isomer is present.
-! The condition on tmax is to guarantee that if the isomer activity goes to zero, the code is still executed.
-!
-          itm = int(Tmaxactivity(iz,ia,-1))
-          if (is == 1 .and. Niso(iz,ia,1,itm) > 0.) then
-            Niso(iz,ia,-1,it) = Niso(iz,ia,0,it) + Niso(iz,ia,1,it)
-            activity(iz,ia,-1,it) = activity(iz,ia,0,it) + activity(iz,ia,1,it)
-          endif
-          if (is == 1 .and. activity(iz,ia,-1,it) > activity(iz,ia,-1,itm)) Tmaxactivity(iz,ia,-1) = it
-! MV end
           if (activity(iz, ia, is, it) > acmax) then
             Tmaxactivity(iz, ia, is) = it
             acmax = activity(iz, ia, is, it)

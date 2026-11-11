@@ -281,11 +281,17 @@ Loop1:  do i = 1, nlines
         write(*, '(" ISOTOPIA-error: Z, A index out of range ", a)') trim(inline(i))
         stop
       endif
-      xsfile(iz, ia, is) = word(4)
+!
+! The state (-1=total, 0=ground state, 1=isomer, ...) is optional and defaults to the total.
+! It must be read before the file name is stored, so the name goes to the requested state.
+!
       is = -1
-      read(word(5), * , iostat = istat) is
-      if (istat /= 0) cycle Loop1
-      if (is <  -1 .or. is > numisom)  call read_error(line, istat)
+      if (word(5) /= ' ') then
+        read(word(5), * , iostat = istat) is
+        if (istat /= 0) call read_error(line, istat)
+        if (is <  -1 .or. is > numisom)  call read_error(line, istat)
+      endif
+      xsfile(iz, ia, is) = word(4)
       cycle
     endif
     if (key == 'source') then
