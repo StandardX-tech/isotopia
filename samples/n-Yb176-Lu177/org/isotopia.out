@@ -6,7 +6,7 @@
  Copyright (C) 2026  A.J. Koning
 
  User: Unknown User
- Date: 2026-10-13
+ Date: 2026-11-11
 
  ########## USER INPUT ##########
 
@@ -52,6 +52,7 @@
  Adepth             20     Adepth       depth to which A numbers are scanned for cross sections
  decay               y     flagdecay    flag to include decay of nuclides (n only for diagnosis) 
 
+ ISOTOPIA-warning: reaction rate of Yb 177 from the total file ( 4.65977E-11) differs from the sum of its states ( 6.74529E-11); the sum is used
 
  Summary of isotope production for n + Yb176
 
@@ -75,7 +76,7 @@
  Lu 177     5.011175E+09   1.452515E+10   5.023592E+07   4.151965E+15   0.99824   0.000000E+00   1.206941E-06          0 y   6 d  15 h  31 m  41 s           0 y  67 d  20 h  29 m   6 s 
  Lu 176     0.000000E+00   0.000000E+00   0.000000E+00   1.645583E+12   0.00046   0.000000E+00   0.000000E+00       stable                                infinite                       
  Lu 175     0.000000E+00   0.000000E+00   0.000000E+00   3.533426E+12   0.00100   0.000000E+00   0.000000E+00       stable                                infinite                       
- Yb 177     1.106778E+11   1.594032E+11   5.307743E+10   7.904009E+14   0.00000   4.659774E-11   1.007540E-04                                                                            
+ Yb 177     1.106778E+11   3.208052E+11   2.643270E+11   7.904009E+14   0.00000   6.745288E-11   1.007540E-04                                                                            
  Yb 177 g   7.960709E+10   2.307452E+11   7.668557E+10   7.901135E+14   0.00000   4.113006E-11   1.007540E-04          0 y   0 d   1 h  54 m  39 s           0 y   1 d   7 h  41 m  24 s 
  Yb 177 m   3.107342E+10   9.006789E+10   1.876414E+11   2.873569E+11   0.00000   2.632282E-11   1.081353E-01          0 y   0 d   0 h   0 m   6 s           0 y   0 d   0 h   2 m  50 s 
  Yb 176     0.000000E+00   0.000000E+00   0.000000E+00   1.180372E+21   0.99999   9.110631E-11   0.000000E+00                                                                            
